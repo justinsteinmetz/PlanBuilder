@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan Builder · Band 2 Unit 3</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Lato:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fdf6ec;
+  --terra:#c2410c;--terra-l:#fed7aa;--terra-m:#fb923c;--terra-d:#7c2d12;
+  --olive:#4d7c0f;--olive-l:#ecfccb;--olive-m:#65a30d;--olive-d:#365314;
+  --clay:#92400e;--clay-l:#fef3c7;
+  --rust:#b45309;
+  --dark:#1c1209;--mid:#6b4c2a;--muted:#a8845c;--faint:#f7efe3;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:var(--paper);font-family:'Lato',sans-serif;font-weight:300;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  overflow-x:hidden;
+}
+
+/* WARM TILED BACKGROUND */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    repeating-linear-gradient(0deg,rgba(194,65,12,0.04) 0,rgba(194,65,12,0.04) 1px,transparent 1px,transparent 28px),
+    repeating-linear-gradient(90deg,rgba(194,65,12,0.04) 0,rgba(194,65,12,0.04) 1px,transparent 1px,transparent 28px);
+}
+/* DECORATIVE TOP BAND */
+body::after{
+  content:'';position:fixed;top:0;left:0;right:0;height:6px;z-index:10;pointer-events:none;
+  background:repeating-linear-gradient(90deg,var(--terra) 0,var(--terra) 16px,var(--olive) 16px,var(--olive) 32px,var(--clay) 32px,var(--clay) 48px);
+}
+
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:32px 18px 52px;width:100%;max-width:660px;position:relative;z-index:1;text-align:center}
+.screen.active{display:flex}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.screen.active{animation:fadeIn .3s ease}
+
+/* ── INTRO ── */
+.intro-icons{font-size:48px;margin-bottom:14px;letter-spacing:6px}
+.game-label{font-family:'Lato',sans-serif;font-size:10px;font-weight:900;letter-spacing:0.2em;text-transform:uppercase;color:var(--terra);background:var(--terra-l);padding:4px 14px;border-radius:20px;display:inline-block;margin-bottom:16px;border:2px solid var(--terra-m)}
+.game-title{font-family:'Playfair Display',serif;font-size:clamp(52px,12vw,80px);font-weight:900;color:var(--dark);line-height:.95;letter-spacing:-2px;margin-bottom:8px;text-shadow:3px 4px 0 rgba(124,45,18,0.12)}
+.game-title em{color:var(--terra);font-style:normal}
+.game-sub{font-size:16px;color:var(--mid);font-weight:400;margin-bottom:28px}
+
+.brief{background:white;border-radius:var(--r);padding:22px 24px;margin-bottom:24px;width:100%;text-align:left;
+  border-left:5px solid var(--terra);box-shadow:0 6px 28px rgba(124,45,18,0.1)}
+.brief h3{font-family:'Playfair Display',serif;font-size:19px;color:var(--terra-d);margin-bottom:10px}
+.brief p{font-size:14px;color:var(--mid);line-height:1.6;margin-bottom:10px}
+.struct{display:flex;flex-wrap:wrap;gap:6px}
+.struct span{background:var(--terra-l);color:var(--terra);font-weight:900;font-size:12px;padding:3px 12px;border-radius:4px;border:1px solid var(--terra-m)}
+
+.btn-start{background:var(--terra);color:white;font-family:'Playfair Display',serif;font-size:22px;font-weight:700;
+  padding:15px 48px;border:none;border-radius:var(--r);
+  box-shadow:0 6px 0 var(--terra-d),0 8px 20px rgba(124,45,18,0.2);
+  cursor:pointer;transition:transform .1s,box-shadow .1s;margin-bottom:10px}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 0 var(--terra-d),0 12px 24px rgba(124,45,18,0.25)}
+.btn-start:active{transform:translateY(4px);box-shadow:0 2px 0 var(--terra-d)}
+.btn-link{background:none;border:none;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;text-decoration:underline}
+
+/* ── GAME ── */
+.game-wrap{width:100%;max-width:640px}
+
+.hud{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.pts-tag{background:var(--terra);color:white;font-weight:900;font-size:14px;padding:6px 16px;border-radius:20px;box-shadow:0 3px 0 var(--terra-d)}
+.round-tag{background:var(--dark);color:white;font-weight:700;font-size:13px;padding:6px 16px;border-radius:20px;font-family:'Lato',sans-serif;letter-spacing:0.04em}
+
+.prog{height:10px;background:white;border-radius:8px;margin-bottom:22px;overflow:hidden;box-shadow:inset 0 2px 4px rgba(0,0,0,0.07),0 2px 0 rgba(124,45,18,0.08)}
+.prog-bar{height:100%;background:linear-gradient(90deg,var(--terra-m),var(--terra));border-radius:8px;transition:width .5s cubic-bezier(0.34,1.56,0.64,1)}
+
+/* SITUATION — speech bubble style */
+.situation{
+  background:white;border-radius:var(--r);padding:22px 24px;margin-bottom:8px;
+  box-shadow:0 6px 24px rgba(124,45,18,0.1),0 3px 0 var(--terra-m);
+  border:2px solid var(--terra-l);position:relative;
+}
+.situation::after{
+  content:'';position:absolute;bottom:-14px;left:32px;
+  border-left:14px solid transparent;border-right:14px solid transparent;border-top:14px solid white;
+}
+.sit-eyebrow{font-size:10px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.sit-text{font-family:'Playfair Display',serif;font-size:18px;color:var(--dark);line-height:1.45;margin-bottom:6px}
+.sit-task{font-size:13px;color:var(--mid);font-weight:700;font-style:italic}
+
+/* BUILDER */
+.builder{background:white;border-radius:var(--r);padding:20px 22px;margin-top:18px;margin-bottom:12px;
+  box-shadow:0 4px 16px rgba(124,45,18,0.08);border:2px solid var(--faint)}
+.section-label{font-size:10px;font-weight:900;letter-spacing:0.14em;text-transform:uppercase;margin-bottom:8px}
+.section-label.terra{color:var(--terra)}
+.section-label.olive{color:var(--olive-d)}
+
+.selects{display:flex;gap:8px;margin-bottom:4px}
+select{
+  flex:1;background:var(--faint);border:2px solid var(--terra-l);color:var(--dark);
+  font-family:'Lato',sans-serif;font-weight:700;font-size:15px;
+  padding:10px 12px;border-radius:8px;outline:none;cursor:pointer;
+  -webkit-appearance:none;appearance:none;transition:border-color .2s;
+}
+select:focus{border-color:var(--terra)}
+
+.adv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:7px;margin-top:10px}
+.adv{
+  background:var(--olive-l);border:2px solid transparent;
+  color:var(--olive-d);font-weight:700;font-size:13px;
+  padding:9px 8px;border-radius:8px;cursor:pointer;
+  transition:all .15s;text-align:center;
+  box-shadow:0 2px 0 rgba(77,124,15,0.15);
+}
+.adv:hover{border-color:var(--olive-m);transform:translateY(-2px);box-shadow:0 4px 0 rgba(77,124,15,0.2)}
+.adv:active{transform:translateY(0);box-shadow:0 1px 0 rgba(77,124,15,0.15)}
+.adv.selected{background:var(--olive-m);border-color:var(--olive-d);color:white;box-shadow:0 2px 0 var(--olive-d)}
+
+/* PREVIEW */
+.preview{
+  min-height:54px;background:var(--faint);border:2px dashed var(--terra-l);
+  border-radius:8px;padding:12px 16px;display:flex;align-items:center;
+  font-family:'Playfair Display',serif;font-size:18px;color:var(--dark);
+  margin-bottom:12px;
+}
+.preview .adv-part{color:var(--olive-d);font-weight:700;font-style:italic}
+.preview .ph{color:var(--muted);font-style:italic;font-size:14px;font-family:'Lato',sans-serif}
+
+/* FEEDBACK */
+.feedback{border-radius:10px;padding:13px 16px;font-size:14px;font-weight:700;line-height:1.5;
+  display:none;margin-bottom:10px}
+.feedback.show{display:block;animation:slideUp .2s ease}
+@keyframes slideUp{from{transform:translateY(6px);opacity:0}to{transform:none;opacity:1}}
+.feedback.correct{background:var(--olive-l);color:var(--olive-d);border-left:4px solid var(--olive-m)}
+.feedback.partial{background:var(--terra-l);color:var(--terra);border-left:4px solid var(--terra-m)}
+.feedback.wrong{background:#fee2e2;color:#b91c1c;border-left:4px solid #f87171}
+.fb-model{font-size:12px;margin-top:5px;opacity:0.8;font-style:italic;font-weight:400;font-family:'Lato',sans-serif}
+
+.action-row{display:flex;gap:8px}
+.check-btn{flex:1;background:var(--olive-m);color:white;font-family:'Playfair Display',serif;font-size:18px;font-weight:700;
+  padding:13px;border:none;border-radius:8px;cursor:pointer;
+  box-shadow:0 4px 0 var(--olive-d),0 5px 14px rgba(77,124,15,0.25);
+  transition:transform .1s,box-shadow .1s}
+.check-btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--olive-d)}
+.check-btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--olive-d)}
+.next-btn{flex:1;background:var(--terra);color:white;font-family:'Playfair Display',serif;font-size:18px;font-weight:700;
+  padding:13px;border:none;border-radius:8px;cursor:pointer;
+  box-shadow:0 4px 0 var(--terra-d),0 5px 14px rgba(124,45,18,0.25);
+  transition:transform .1s,box-shadow .1s;display:none}
+.next-btn.show{display:block;animation:slideUp .2s ease}
+.next-btn:hover{transform:translateY(-2px);box-shadow:0 6px 0 var(--terra-d)}
+.next-btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--terra-d)}
+
+/* ── RESULTS ── */
+.result-icon{font-size:80px;margin-bottom:8px;animation:pop .4s cubic-bezier(0.34,1.56,0.64,1)}
+@keyframes pop{from{transform:scale(0)}to{transform:scale(1)}}
+.result-pts{font-family:'Playfair Display',serif;font-size:80px;font-weight:900;color:var(--terra);line-height:1}
+.result-sub{font-size:14px;color:var(--mid);font-weight:400;margin-bottom:8px}
+.result-msg{background:white;border-radius:var(--r);padding:16px 20px;margin:14px 0 22px;font-size:15px;font-weight:700;color:var(--dark);border-left:5px solid var(--terra);box-shadow:0 4px 16px rgba(124,45,18,0.08)}
+.review{width:100%;text-align:left;margin-bottom:22px;display:flex;flex-direction:column;gap:8px;max-height:44vh;overflow-y:auto}
+.rev-item{background:white;border-radius:8px;padding:11px 14px;box-shadow:0 2px 8px rgba(124,45,18,0.07)}
+.rev-sit{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:3px}
+.rev-ans{font-size:13px;color:var(--dark);font-weight:700}
+.rev-model{font-size:12px;color:var(--terra);font-style:italic;margin-top:2px}
+</style>
+</head>
+<body>
+
+<div class="screen active" id="intro">
+  <div class="intro-icons">🍳🌿🥄</div>
+  <div class="game-label">Band 2 · Unit 3 · Helping out</div>
+  <div class="game-title">Plan<br><em>Builder</em></div>
+  <div class="game-sub">going to + adverbs of manner</div>
+  <div class="brief">
+    <h3>How it works</h3>
+    <p>You see a situation. Build a sentence using <em>going to</em>, then pick an adverb of manner that fits the situation.</p>
+    <div class="struct">
+      <span>Subject</span><span>am/is/are going to</span><span>verb</span><span>+ adverb</span>
+    </div>
+  </div>
+  <button class="btn-start" onclick="startGame()">Start building</button>
+  <button class="btn-link" onclick="startGame()">Skip intro</button>
+</div>
+
+<div class="screen" id="game">
+  <div class="game-wrap">
+    <div class="hud">
+      <div class="pts-tag">🍊 <span id="ptsVal">0</span> pts</div>
+      <div class="round-tag">Round <span id="roundVal">1</span> / 8</div>
+    </div>
+    <div class="prog"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+
+    <div class="situation">
+      <div class="sit-eyebrow">The situation</div>
+      <div class="sit-text" id="sitText"></div>
+      <div class="sit-task" id="sitTask"></div>
+    </div>
+
+    <div class="builder">
+      <div class="section-label terra">Build your going to sentence</div>
+      <div class="selects">
+        <select id="subjSel" onchange="updatePreview()">
+          <option value="">Subject…</option>
+          <option>I</option><option>He</option><option>She</option><option>They</option><option>We</option>
+        </select>
+        <select id="verbSel" onchange="updatePreview()">
+          <option value="">Verb phrase…</option>
+        </select>
+      </div>
+      <div class="section-label olive" style="margin-top:14px">Choose an adverb of manner</div>
+      <div class="adv-grid" id="advGrid"></div>
+    </div>
+
+    <div class="preview" id="preview"><span class="ph">Your sentence will appear here…</span></div>
+
+    <div class="feedback" id="feedback"><span id="fbText"></span><div class="fb-model" id="fbModel"></div></div>
+
+    <div class="action-row">
+      <button class="check-btn" id="checkBtn" onclick="checkAnswer()">Check it ✓</button>
+      <button class="next-btn" id="nextBtn" onclick="nextRound()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="results">
+  <div class="result-icon" id="resIcon">🍽️</div>
+  <div class="result-pts" id="resPts"></div>
+  <div class="result-sub">points earned</div>
+  <div class="result-msg" id="resMsg"></div>
+  <div class="review" id="reviewWrap"></div>
+  <button class="btn-start" onclick="startGame()">Try again</button>
+</div>
+
+<script>
+const SITUATIONS=[
+  {text:"The kitchen is a total mess. Mum is really angry.",task:"What is she going to do? How?",verbs:["clean the kitchen","tidy up","wash the dishes","help at home"],good:["quickly","carefully","quietly"],bad:["loudly","lazily","angrily"],model:"She is going to clean the kitchen quickly."},
+  {text:"Jake has a huge maths test tomorrow morning.",task:"What is he going to do? How?",verbs:["study","prepare","do his homework","practise"],good:["carefully","seriously","quietly"],bad:["quickly","lazily","loudly"],model:"He is going to study carefully."},
+  {text:"There is a sleeping baby in the next room.",task:"What are they going to do? How?",verbs:["walk past","close the door","speak","move"],good:["quietly","carefully","slowly"],bad:["loudly","quickly","angrily"],model:"They are going to walk quietly."},
+  {text:"Leila is making a birthday cake for her best friend.",task:"What is she going to do? How?",verbs:["bake the cake","decorate it","mix the ingredients","prepare the food"],good:["carefully","slowly","beautifully"],bad:["quickly","loudly","angrily"],model:"She is going to bake the cake carefully."},
+  {text:"There's a really exciting football match on TV tonight!",task:"What are they going to do? How?",verbs:["watch the match","cheer","celebrate","shout"],good:["loudly","excitedly","happily"],bad:["quietly","sadly","carefully"],model:"They are going to watch the match loudly."},
+  {text:"Sam has just broken the neighbour's window.",task:"What is he going to do? How?",verbs:["apologise","explain","talk to the neighbour","pay for it"],good:["honestly","politely","quietly"],bad:["loudly","angrily","quickly"],model:"He is going to apologise honestly."},
+  {text:"It is snowing heavily. The roads are really dangerous.",task:"What is she going to do? How?",verbs:["drive","walk","travel","cycle"],good:["carefully","slowly","safely"],bad:["quickly","loudly","happily"],model:"She is going to drive carefully."},
+  {text:"The class trip to the museum is tomorrow!",task:"What are they going to do? How?",verbs:["visit the museum","look at the exhibits","listen to the guide","behave"],good:["carefully","quietly","politely"],bad:["loudly","quickly","angrily"],model:"They are going to listen to the guide quietly."}
+];
+const ALL_ADV=["quickly","carefully","quietly","loudly","slowly","seriously","politely","honestly","happily","angrily","excitedly","beautifully","safely","lazily"];
+
+let rounds,current,pts,selAdv,answered,reviewItems;
+
+function shuffle(a){return[...a].sort(()=>Math.random()-0.5)}
+function setScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+
+function startGame(){
+  rounds=shuffle(SITUATIONS);current=0;pts=0;selAdv=null;answered=false;reviewItems=[];
+  setScreen('game');loadRound();
+}
+
+function loadRound(){
+  const r=rounds[current];
+  selAdv=null;answered=false;
+  document.getElementById('sitText').textContent=r.text;
+  document.getElementById('sitTask').textContent=r.task;
+  const vs=document.getElementById('verbSel');
+  vs.innerHTML='<option value="">Verb phrase…</option>'+shuffle(r.verbs).map(v=>`<option>${v}</option>`).join('');
+  document.getElementById('subjSel').value='';
+  // FIXED: guarantee correct adverbs always in pool
+  const goodPool=shuffle(r.good).slice(0,Math.min(r.good.length,3));
+  const badPool=shuffle(r.bad).slice(0,Math.min(r.bad.length,3));
+  const used=new Set([...goodPool,...badPool]);
+  const extras=shuffle(ALL_ADV.filter(a=>!used.has(a)));
+  const pool=shuffle([...goodPool,...badPool,...extras]).slice(0,9);
+  document.getElementById('advGrid').innerHTML=pool.map(a=>`<button class="adv" onclick="pickAdv('${a}',this)">${a}</button>`).join('');
+  document.getElementById('preview').innerHTML='<span class="ph">Your sentence will appear here…</span>';
+  // FIXED: always clear feedback at round start — no stale state
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('fbText').textContent='';
+  document.getElementById('fbModel').textContent='';
+  document.getElementById('nextBtn').className='next-btn';
+  document.getElementById('checkBtn').style.display='block';
+  document.getElementById('progBar').style.width=(current/rounds.length*100)+'%';
+  document.getElementById('ptsVal').textContent=pts;
+  document.getElementById('roundVal').textContent=current+1;
+}
+
+function pickAdv(word,btn){
+  if(answered)return;
+  document.querySelectorAll('.adv').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selAdv=word;updatePreview();
+}
+
+function updatePreview(){
+  const subj=document.getElementById('subjSel').value;
+  const verb=document.getElementById('verbSel').value;
+  if(!subj&&!verb&&!selAdv){document.getElementById('preview').innerHTML='<span class="ph">Your sentence will appear here…</span>';return;}
+  const be=subj==='I'?'am':subj==='He'||subj==='She'?'is':'are';
+  let s='';
+  if(subj)s+=subj+' ';
+  if(subj&&verb)s+=be+' going to ';
+  if(verb)s+=verb;
+  const advHTML=selAdv?` <span class="adv-part">${selAdv}</span>`:'';
+  document.getElementById('preview').innerHTML=`${s}${advHTML}${s?'.':''}`;
+}
+
+function checkAnswer(){
+  if(answered)return;
+  const r=rounds[current];
+  const subj=document.getElementById('subjSel').value;
+  const verb=document.getElementById('verbSel').value;
+  if(!subj||!verb){
+    // FIXED: show inline feedback, reset properly on next valid call
+    const fb=document.getElementById('feedback');
+    fb.className='feedback partial show';
+    document.getElementById('fbText').textContent='Choose a subject and a verb phrase first.';
+    document.getElementById('fbModel').textContent='';
+    return;
+  }
+  // FIXED: if we get here, clear any stale validation message before proceeding
+  answered=true;
+  document.getElementById('checkBtn').style.display='none';
+  document.getElementById('nextBtn').className='next-btn show';
+  const goodAdv=selAdv&&r.good.includes(selAdv);
+  const badAdv=selAdv&&r.bad.includes(selAdv);
+  const anyAdv=!!selAdv;
+  const be=subj==='I'?'am':subj==='He'||subj==='She'?'is':'are';
+  const sentence=`${subj} ${be} going to ${verb}${selAdv?' '+selAdv:''}.`;
+  let p=0;
+  const fb=document.getElementById('feedback');
+  if(goodAdv){
+    p=2;fb.className='feedback correct show';
+    document.getElementById('fbText').textContent='✓ Right structure and the perfect adverb for this situation!';
+  } else if(badAdv){
+    p=1;fb.className='feedback partial show';
+    document.getElementById('fbText').textContent=`"${selAdv}" doesn't quite fit here — think about what the situation really calls for.`;
+  } else if(anyAdv){
+    p=1;fb.className='feedback partial show';
+    document.getElementById('fbText').textContent='Good going to structure! Think about whether that adverb really fits.';
+  } else {
+    p=1;fb.className='feedback partial show';
+    document.getElementById('fbText').textContent='Good going to structure — add an adverb of manner to get full marks!';
+  }
+  document.getElementById('fbModel').textContent='Model: '+r.model;
+  pts+=p;
+  document.getElementById('ptsVal').textContent=pts;
+  reviewItems.push({text:r.text,ans:sentence,model:r.model,p});
+}
+
+function nextRound(){
+  current++;
+  if(current>=rounds.length){showResults();return;}
+  loadRound();
+}
+
+function showResults(){
+  const max=rounds.length*2;
+  document.getElementById('resPts').textContent=pts;
+  const pct=pts/max;
+  const d=[
+    {i:'🥄',m:'Keep practising — focus on the going to structure and adverbs of manner.'},
+    {i:'🍳',m:'Good effort! Watch the adverb choices — they need to match the situation.'},
+    {i:'🍰',m:'Strong work! Great going to sentences and good adverb choices.'},
+    {i:'👨‍🍳',m:'Perfect! You\'ve mastered going to and adverbs of manner!'}
+  ][pct<0.4?0:pct<0.6?1:pct<1?2:3];
+  document.getElementById('resIcon').textContent=d.i;
+  document.getElementById('resMsg').textContent=d.m+` (${pts}/${max} points)`;
+  document.getElementById('reviewWrap').innerHTML=reviewItems.map(i=>`
+    <div class="rev-item">
+      <div class="rev-sit">${i.text}</div>
+      <div class="rev-ans">Your answer: ${i.ans} <strong>[${i.p}pt${i.p!==1?'s':''}]</strong></div>
+      ${i.p<2?`<div class="rev-model">Model: ${i.model}</div>`:''}
+    </div>`).join('');
+  setScreen('results');
+}
+</script>
+</body>
+</html>
